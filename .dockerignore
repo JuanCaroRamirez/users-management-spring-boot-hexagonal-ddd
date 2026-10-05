@@ -1,4 +1,10 @@
-target
 .git
+.github
+.idea
 .vscode
+target
+*.iml
+*.log
+spec
+
 .env
