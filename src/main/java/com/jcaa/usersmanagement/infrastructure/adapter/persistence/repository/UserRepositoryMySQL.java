@@ -16,6 +16,7 @@ import com.jcaa.usersmanagement.infrastructure.adapter.persistence.mapper.UserPe
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Repository;
+import org.springframework.context.annotation.Profile;
 
 import javax.sql.DataSource;
 import java.sql.Connection;
@@ -26,43 +27,38 @@ import java.util.List;
 import java.util.Optional;
 
 @Slf4j
+@Profile("!postgres")
 @Repository
 @RequiredArgsConstructor
 public class UserRepositoryMySQL
     implements SaveUserPort,
-        UpdateUserPort,
-        GetUserByIdPort,
-        GetUserByEmailPort,
-        GetAllUsersPort,
-        DeleteUserPort {
+    UpdateUserPort,
+    GetUserByIdPort,
+    GetUserByEmailPort,
+    GetAllUsersPort,
+    DeleteUserPort {
 
-  private static final String SQL_INSERT =
-      "INSERT INTO users "
+  private static final String SQL_INSERT = "INSERT INTO users "
       + "(id, name, email, password, role, status, created_at, updated_at) "
       + "VALUES (?, ?, ?, ?, ?, ?, NOW(), NOW())";
 
-  private static final String SQL_UPDATE =
-      "UPDATE users SET name = ?, email = ?, password = ?, role = ?, status = ?, updated_at = NOW() "
+  private static final String SQL_UPDATE = "UPDATE users SET name = ?, email = ?, password = ?, role = ?, status = ?, updated_at = NOW() "
       + "WHERE id = ?";
 
-  private static final String SQL_SELECT_BY_ID =
-      "SELECT id, name, email, password, role, status, created_at, updated_at "
+  private static final String SQL_SELECT_BY_ID = "SELECT id, name, email, password, role, status, created_at, updated_at "
       + "FROM users "
       + "WHERE id = ? LIMIT 1";
 
-  private static final String SQL_SELECT_BY_EMAIL =
-      "SELECT id, name, email, password, role, status, created_at, updated_at "
+  private static final String SQL_SELECT_BY_EMAIL = "SELECT id, name, email, password, role, status, created_at, updated_at "
       + "FROM users "
       + "WHERE email = ? LIMIT 1";
 
-  private static final String SQL_SELECT_ALL =
-      "SELECT id, name, email, password, role, status, created_at, updated_at "
+  private static final String SQL_SELECT_ALL = "SELECT id, name, email, password, role, status, created_at, updated_at "
       + "FROM users "
       + "ORDER BY name ASC";
 
-  private static final String SQL_DELETE =
-        "DELETE FROM users "
-        + "WHERE id = ?";
+  private static final String SQL_DELETE = "DELETE FROM users "
+      + "WHERE id = ?";
 
   private final DataSource dataSource;
 
@@ -83,7 +79,7 @@ public class UserRepositoryMySQL
   @Override
   public Optional<UserModel> getById(final UserId userId) {
     try (final Connection connection = dataSource.getConnection();
-         final PreparedStatement statement = connection.prepareStatement(SQL_SELECT_BY_ID)) {
+        final PreparedStatement statement = connection.prepareStatement(SQL_SELECT_BY_ID)) {
       statement.setString(1, userId.value());
       final ResultSet resultSet = statement.executeQuery();
       if (!resultSet.next()) {
@@ -98,7 +94,7 @@ public class UserRepositoryMySQL
   @Override
   public Optional<UserModel> getByEmail(final UserEmail email) {
     try (final Connection connection = dataSource.getConnection();
-         final PreparedStatement statement = connection.prepareStatement(SQL_SELECT_BY_EMAIL)) {
+        final PreparedStatement statement = connection.prepareStatement(SQL_SELECT_BY_EMAIL)) {
       statement.setString(1, email.value());
       final ResultSet resultSet = statement.executeQuery();
       if (!resultSet.next()) {
@@ -113,7 +109,7 @@ public class UserRepositoryMySQL
   @Override
   public List<UserModel> getAll() {
     try (final Connection connection = dataSource.getConnection();
-         final PreparedStatement statement = connection.prepareStatement(SQL_SELECT_ALL)) {
+        final PreparedStatement statement = connection.prepareStatement(SQL_SELECT_ALL)) {
       final ResultSet resultSet = statement.executeQuery();
       return UserPersistenceMapper.fromResultSetToModelList(resultSet);
     } catch (final SQLException exception) {
@@ -124,7 +120,7 @@ public class UserRepositoryMySQL
   @Override
   public void delete(final UserId userId) {
     try (final Connection connection = dataSource.getConnection();
-         final PreparedStatement statement = connection.prepareStatement(SQL_DELETE)) {
+        final PreparedStatement statement = connection.prepareStatement(SQL_DELETE)) {
       statement.setString(1, userId.value());
       statement.executeUpdate();
     } catch (final SQLException exception) {
@@ -134,7 +130,7 @@ public class UserRepositoryMySQL
 
   private void executeSave(final UserPersistenceDto dto) {
     try (final Connection connection = dataSource.getConnection();
-         final PreparedStatement statement = connection.prepareStatement(SQL_INSERT)) {
+        final PreparedStatement statement = connection.prepareStatement(SQL_INSERT)) {
       statement.setString(1, dto.id());
       statement.setString(2, dto.name());
       statement.setString(3, dto.email());
@@ -149,7 +145,7 @@ public class UserRepositoryMySQL
 
   private void executeUpdate(final UserPersistenceDto dto) {
     try (final Connection connection = dataSource.getConnection();
-         final PreparedStatement statement = connection.prepareStatement(SQL_UPDATE)) {
+        final PreparedStatement statement = connection.prepareStatement(SQL_UPDATE)) {
       statement.setString(1, dto.name());
       statement.setString(2, dto.email());
       statement.setString(3, dto.password());
